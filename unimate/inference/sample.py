@@ -200,7 +200,9 @@ def _build_diffusion(config: MainConfig):
 
 def _load_checkpoint(model, model_path: str, config: MainConfig):
     """Load weights into ``model`` in place; apply EMA shadow if available."""
-    state_dict = torch.load(model_path, map_location='cpu')
+    # All checkpoint tensors are deserialized with PyTorch's restricted
+    # weights-only loader; this also accepts the official optimizer/EMA state dict.
+    state_dict = torch.load(model_path, map_location='cpu', weights_only=True)
     model.load_state_dict(state_dict.get('model_state_dict', state_dict))
 
     if config.training.use_ema and 'ema_state_dict' in state_dict:
